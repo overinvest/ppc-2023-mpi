@@ -62,7 +62,7 @@ void parallelBatcherSort(const std::vector<int>& arr, int l, int r) {
 
     int localSize = (r - l + 1) / size;
     int remainder = (r - l + 1) % size;
-    std::vector<int> localArr(localSize + (rank < remainder ? 1 : 0));
+    std::vector<int> lArr(localSize + (rank < remainder ? 1 : 0));
 
     std::vector<int> co(size, localSize);
     std::vector<int> dis(size, 0);
@@ -74,21 +74,21 @@ void parallelBatcherSort(const std::vector<int>& arr, int l, int r) {
     }
 
     // Scatter the array among processes
-    MPI_Scatterv(&arr[l], co.data(), dis.data(), MPI_INT, localArr.data(), localArr.size(), MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Scatterv(&arr[l], co.data(), dis.data(), MPI_INT, lArr.data(), lArr.size(), MPI_INT, 0, MPI_COMM_WORLD);
 
     // Perform local sort
-    batcherSort(localArr, 0, localArr.size() - 1);
+    batcherSort(lArr, 0, lArr.size() - 1);
 
     // Gather sorted subarrays from all processes
-    std::vector<int> mergedArr(r - l + 1);
-    MPI_Gatherv(localArr.data(), localArr.size(), MPI_INT, mergedArr.data(), co.data(), dis.data(), MPI_INT, 0, MPI_COMM_WORLD);
+    std::vector<int> mArr(r - l + 1);
+    MPI_Gatherv(lArr.data(), lArr.size(), MPI_INT, mArr.data(), co.data(), dis.data(), MPI_INT, 0, MPI_COMM_WORLD);
 
     if (rank == 0) {
         // Merge sorted subarrays
-        batcherSort(mergedArr, 0, mergedArr.size() - 1);
+        batcherSort(mArr, 0, mArr.size() - 1);
 
         // Copy sorted elements back to the original array
-        for (int i = 0; i < mergedArr.size(); ++i)
-            arr[l + i] = mergedArr[i];
+        for (int i = 0; i < mArr.size(); ++i)
+            arr[l + i] = mArr[i];
     }
 }
