@@ -1,7 +1,7 @@
 // Copyright 2023 Bodrov Daniil
 #include "task_3/bodrov_d_batcher_sort/batcher_sort.h"
 
-void batcherMerge(const std::vector<int>& arr, int l, int m, int r) {
+void batcherMerge(int* arr, int l, int m, int r) {
     int n1 = m - l + 1;
     int n2 = r - m;
 
@@ -39,7 +39,7 @@ void batcherMerge(const std::vector<int>& arr, int l, int m, int r) {
     }
 }
 
-void batcherSort(const std::vector<int>& arr, int l, int r) {
+void batcherSort(int* arr, int l, int r) {
     if (l < r) {
         int m = l + (r - l) / 2;
 
@@ -50,7 +50,7 @@ void batcherSort(const std::vector<int>& arr, int l, int r) {
     }
 }
 
-void parallelBatcherSort(const std::vector<int>& arr, int l, int r) {
+void parallelBatcherSort(int* arr, int l, int r) {
     int rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -62,33 +62,43 @@ void parallelBatcherSort(const std::vector<int>& arr, int l, int r) {
 
     int localSize = (r - l + 1) / size;
     int remainder = (r - l + 1) % size;
-    std::vector<int> lArr(localSize + (rank < remainder ? 1 : 0));
+    int* localArr = new int[localSize + (rank < remainder ? 1 : 0)];
 
-    std::vector<int> co(size, localSize);
-    std::vector<int> dis(size, 0);
-    for (int i = 0; i < remainder; ++i) {
-        ++co[i];
+    int* sendcounts = new int[size];
+    int* displs = new int[size];
+    for (int i = 0; i < size; ++i) {
+        sendcounts[i] = localSize;
+        displs[i] = i * localSize;
     }
-    for (int i = 1; i < size; ++i) {
-        dis[i] = dis[i - 1] + co[i - 1];
+    for (int i = 0; i < remainder; ++i) {
+        ++sendcounts[i];
     }
 
     // Scatter the array among processes
-    MPI_Scatterv(&arr[l], co.data(), dis.data(), MPI_INT, lArr.data(), lArr.size(), MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Scatterv(&arr[l], sendcounts, displs, MPI_INT, localArr,
+        localSize + (rank < remainder ? 1 : 0), MPI_INT, 0, MPI_COMM_WORLD);
 
     // Perform local sort
-    batcherSort(lArr, 0, lArr.size() - 1);
+    batcherSort(localArr, 0, localSize + (rank < remainder ? 1 : 0) - 1);
 
     // Gather sorted subarrays from all processes
-    std::vector<int> mArr(r - l + 1);
-    MPI_Gatherv(lArr.data(), lArr.size(), MPI_INT, mArr.data(), co.data(), dis.data(), MPI_INT, 0, MPI_COMM_WORLD);
+    int mergedSize = (r - l + 1);
+    int* mergedArr = new int[mergedSize];
+    MPI_Gatherv(localArr, localSize + (rank < remainder ? 1 : 0), MPI_INT,
+        mergedArr, sendcounts, displs, MPI_INT, 0, MPI_COMM_WORLD);
 
     if (rank == 0) {
         // Merge sorted subarrays
-        batcherSort(mArr, 0, mArr.size() - 1);
+        batcherSort(mergedArr, 0, mergedSize - 1);
 
         // Copy sorted elements back to the original array
-        for (int i = 0; i < mArr.size(); ++i)
-            arr[l + i] = mArr[i];
+        for (int i = 0; i < mergedSize; ++i)
+            arr[l + i] = mergedArr[i];
     }
+
+    delete[] localArr;
+    delete[] sendcounts;
+    delete[] displs;
+    delete[] mergedArr;
 }
+
