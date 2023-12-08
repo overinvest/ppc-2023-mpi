@@ -1,7 +1,7 @@
 // Copyright 2023 Bodrov Daniil
 #include "task_3/bodrov_d_batcher_sort/batcher_sort.h"
 
-void batcherMerge(std::vector<int>& arr, int l, int m, int r) {
+void batcherMerge(const std::vector<int>& arr, int l, int m, int r) {
     int n1 = m - l + 1;
     int n2 = r - m;
 
@@ -39,7 +39,7 @@ void batcherMerge(std::vector<int>& arr, int l, int m, int r) {
     }
 }
 
-void batcherSort(std::vector<int>& arr, int l, int r) {
+void batcherSort(const std::vector<int>& arr, int l, int r) {
     if (l < r) {
         int m = l + (r - l) / 2;
 
@@ -50,7 +50,7 @@ void batcherSort(std::vector<int>& arr, int l, int r) {
     }
 }
 
-void parallelBatcherSort(std::vector<int>& arr, int l, int r) {
+void parallelBatcherSort(const std::vector<int>& arr, int l, int r) {
     int rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -64,24 +64,24 @@ void parallelBatcherSort(std::vector<int>& arr, int l, int r) {
     int remainder = (r - l + 1) % size;
     std::vector<int> localArr(localSize + (rank < remainder ? 1 : 0));
 
-    std::vector<int> sendcounts(size, localSize);
-    std::vector<int> displs(size, 0);
+    std::vector<int> scounts(size, localSize);
+    std::vector<int> dis(size, 0);
     for (int i = 0; i < remainder; ++i) {
-        ++sendcounts[i];
+        ++scounts[i];
     }
     for (int i = 1; i < size; ++i) {
-        displs[i] = displs[i - 1] + sendcounts[i - 1];
+        dis[i] = dis[i - 1] + scounts[i - 1];
     }
 
     // Scatter the array among processes
-    MPI_Scatterv(&arr[l], sendcounts.data(), displs.data(), MPI_INT, localArr.data(), localArr.size(), MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Scatterv(&arr[l], scounts.data(), dis.data(), MPI_INT, localArr.data(), localArr.size(), MPI_INT, 0, MPI_COMM_WORLD);
 
     // Perform local sort
     batcherSort(localArr, 0, localArr.size() - 1);
 
     // Gather sorted subarrays from all processes
     std::vector<int> mergedArr(r - l + 1);
-    MPI_Gatherv(localArr.data(), localArr.size(), MPI_INT, mergedArr.data(), sendcounts.data(), displs.data(), MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Gatherv(localArr.data(), localArr.size(), MPI_INT, mergedArr.data(), scounts.data(), dis.data(), MPI_INT, 0, MPI_COMM_WORLD);
 
     if (rank == 0) {
         // Merge sorted subarrays
