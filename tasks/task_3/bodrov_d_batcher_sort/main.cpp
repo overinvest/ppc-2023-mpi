@@ -14,7 +14,6 @@ TEST(ParallelBatcherSortTest, Test_Sorted_Vector) {
     parallelBatcherSort(&testVect, 0, testVect.size() - 1);
     if (rank == 0) {
         t2 = MPI_Wtime();
-        std::cout << "Time : " << t2 - t1 << std::endl;
         batcherSort(&refVect, 0, refVect.size() - 1);
         EXPECT_EQ(testVect, refVect);
     }
@@ -32,7 +31,6 @@ TEST(ParallelBatcherSortTest, Test_Reverse_Sorted_Vector) {
     parallelBatcherSort(&testVect, 0, testVect.size() - 1);
     if (rank == 0) {
         t2 = MPI_Wtime();
-        std::cout << "Time : " << t2 - t1 << std::endl;
         batcherSort(&refVect, 0, refVect.size() - 1);
         EXPECT_EQ(testVect, refVect);
     }
@@ -51,7 +49,6 @@ TEST(ParallelBatcherSortTest, Test_Entered_Vector) {
     parallelBatcherSort(&testVect, 0, testVect.size() - 1);
     if (rank == 0) {
         t2 = MPI_Wtime();
-        std::cout << "Time : " << t2 - t1 << std::endl;
         batcherSort(&refVect, 0, refVect.size() - 1);
         EXPECT_EQ(testVect, refVect);
     }
@@ -69,7 +66,6 @@ TEST(ParallelBatcherSortTest, Test_Negative_Elements) {
     parallelBatcherSort(&testVect, 0, testVect.size() - 1);
     if (rank == 0) {
         t2 = MPI_Wtime();
-        std::cout << "Time : " << t2 - t1 << std::endl;
         batcherSort(&refVect, 0, refVect.size() - 1);
         EXPECT_EQ(testVect, refVect);
     }
@@ -87,7 +83,6 @@ TEST(ParallelBatcherSortTest, Test_Repeated_Elements) {
     parallelBatcherSort(&testVect, 0, testVect.size() - 1);
     if (rank == 0) {
         t2 = MPI_Wtime();
-        std::cout << "Time : " << t2 - t1 << std::endl;
         batcherSort(&refVect, 0, refVect.size() - 1);
         EXPECT_EQ(testVect, refVect);
     }
