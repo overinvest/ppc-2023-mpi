@@ -4,10 +4,10 @@
 
 TEST(Parallel_Readers_Writers, Test1) {
   int rank = 0;
-  int size_world = 0;
+  int sizeWorld = 0;
 
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &size_world);
+  MPI_Comm_size(MPI_COMM_WORLD, &sizeWorld);
   ReadersWriters(0, 0);
 
   if (rank == 0) {
@@ -17,10 +17,10 @@ TEST(Parallel_Readers_Writers, Test1) {
 
 TEST(Parallel_Readers_Writers, Test2) {
   int rank = 0;
-  int size_world = 0;
+  int sizeWorld = 0;
 
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &size_world);
+  MPI_Comm_size(MPI_COMM_WORLD, &sizeWorld);
 
   ReadersWriters(1, 0);
 
@@ -31,10 +31,10 @@ TEST(Parallel_Readers_Writers, Test2) {
 
 TEST(Parallel_Readers_Writers, Test3) {
   int rank = 0;
-  int size_world = 0;
+  int sizeWorld = 0;
 
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &size_world);
+  MPI_Comm_size(MPI_COMM_WORLD, &sizeWorld);
 
   ReadersWriters(0, 1);
 
@@ -45,10 +45,10 @@ TEST(Parallel_Readers_Writers, Test3) {
 
 TEST(Parallel_Readers_Writers, Test4) {
   int rank = 0;
-  int size_world = 0;
+  int sizeWorld = 0;
 
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &size_world);
+  MPI_Comm_size(MPI_COMM_WORLD, &sizeWorld);
 
   ReadersWriters(1, 1);
 
@@ -59,10 +59,10 @@ TEST(Parallel_Readers_Writers, Test4) {
 
 TEST(Parallel_Readers_Writers, Test5) {
   int rank = 0;
-  int size_world = 0;
+  int sizeWorld = 0;
 
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &size_world);
+  MPI_Comm_size(MPI_COMM_WORLD, &sizeWorld);
 
   ReadersWriters(2, 1);
 
